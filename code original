@@ -1,0 +1,63 @@
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(10, 9, 4, 3, 2, 1);
+int logic_state = 0;
+int led_kuning = 13;
+int v_sensor = 7;
+boolean ls_status;
+boolean v_sensor_status;
+
+void setup()
+{
+  pinMode(logic_state, INPUT);
+  pinMode(led_kuning, OUTPUT);
+  pinMode(v_sensor, INPUT);
+  
+  lcd.begin(16, 2);
+  lcd.setCursor(2, 0);
+  lcd.print("[SEISMOMETER]");
+
+  lcd.setCursor(3, 1);
+  lcd.print("[SEDERHANA]");
+  delay(1000);
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Loading...");
+  delay(1000);
+}
+
+
+void loop()
+{
+  v_sensor_status = digitalRead(v_sensor);
+  ls_status = digitalRead(logic_state);
+  
+  if (ls_status == 1)
+  {
+    digitalWrite(led_kuning, HIGH);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Kondisi");
+    lcd.setCursor(0, 1);
+    lcd.print("[BERBAHAYA]");
+    delay(1000);
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("GEMPA");
+    lcd.setCursor(0, 1);
+    lcd.print("TERDETEKSI...!!!");
+    delay(1000);
+  }
+  else if (ls_status == 0)
+  {
+  digitalWrite(led_kuning, LOW);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Kondisi");
+  lcd.setCursor(0, 1);
+  lcd.print("[AMAN]");
+  delay(300);
+  }
+}
