@@ -1,0 +1,21 @@
+int vib_sens = 7;
+int vib_sens_status = 1;
+
+void setup()
+{
+  pinMode(vib_sens, INPUT);
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  Serial.print("Vibration Sensor: ");
+  vib_sens_status = digitalRead(vib_sens);
+  
+  if(vib_sens_status == 1){
+    Serial.println("Sensing Vibration");
+  } else {
+    Serial.println("No Vibration");
+  }
+ delay(500);
+}
