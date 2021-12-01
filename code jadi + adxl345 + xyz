@@ -1,0 +1,88 @@
+#include <Wire.h> 
+#include <LiquidCrystal_I2C.h>
+#include <Adafruit_Sensor.h> 
+#include <Adafruit_ADXL345_U.h>
+
+Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified();
+LiquidCrystal_I2C lcd(0x27,20,4);
+
+int lampu = 13;
+int sens = 7;
+int sens_status = 1;
+const int buz_pin = 9;
+
+void setup()
+{
+  
+  accel.begin();
+  pinMode(sens, INPUT);
+  pinMode(lampu, OUTPUT);
+  pinMode(buz_pin, OUTPUT); 
+
+  lcd.init();
+  lcd.backlight();
+  
+  lcd.setCursor(0, 1);
+  lcd.print("SEISMOMETER---------");
+  lcd.setCursor(0, 2);
+  lcd.print("-----------SEDERHANA");
+  delay(3500);
+
+  lcd.clear();
+  lcd.setCursor(5, 1);
+  lcd.print("Loading...");
+  delay(2500);
+  Serial.begin(9600); 
+}
+
+
+void loop()
+{
+  sensors_event_t event; 
+  accel.getEvent(&event);
+  
+  sens_status = digitalRead(sens);
+
+  if(sens_status == 1){
+    digitalWrite(buz_pin, HIGH);
+    digitalWrite(lampu, HIGH);
+    delay(500);
+    
+    lcd.clear();
+    lcd.setCursor(4, 1);
+    lcd.print("ADA GETARAN");
+    delay(300);
+
+    lcd.clear();
+    lcd.setCursor(4, 1);
+    lcd.print("ADA GETARAN");
+    lcd.setCursor(1, 2);
+    lcd.print("GEMPA TERDETEKSI!!");
+    delay(300);
+    
+  }else if(sens_status == 0){
+    digitalWrite(lampu, LOW);
+    digitalWrite(buz_pin, LOW);
+    lcd.clear();
+    lcd.setCursor(1,0);
+    lcd.print("Tidak Ada Getaran");
+
+  lcd.setCursor(0,1);
+  lcd.print("====================");
+  lcd.setCursor(1,2);
+  lcd.print("X        Y       Z");
+  lcd.setCursor(0,3);
+  lcd.print(event.acceleration.x);
+  lcd.setCursor(8,3);
+  lcd.print(event.acceleration.y);
+  lcd.setCursor(15,3);
+  lcd.print(event.acceleration.z);
+ 
+  }
+  
+   Serial.print("X: "); Serial.print(event.acceleration.x); Serial.print("  ");
+   Serial.print("Y: "); Serial.print(event.acceleration.y); Serial.print("  ");
+   Serial.print("Z: "); Serial.print(event.acceleration.z); Serial.print("  ");
+   Serial.println("m/s^2 ");
+   delay(200);
+}
