@@ -1,0 +1,132 @@
+#include <Wire.h> 
+#include <LiquidCrystal_I2C.h>
+#include <Adafruit_Sensor.h> 
+#include <Adafruit_ADXL345_U.h>
+
+Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified();
+LiquidCrystal_I2C lcd(0x27,20,4);
+
+int lampu = 13;
+int vib_sens = 7;
+int vib_sens_status = 1;
+const int buz_pin = 9;
+
+int x_sample=0;
+int y_sample=0;
+int z_sample=0;
+
+float samples = 50;
+float max_val = 15;
+float min_val = -15;
+
+void setup()
+{
+  
+  accel.begin();
+  Serial.begin(9600); 
+  Serial.println("Time & Date, X, Y, Z");
+  sensors_event_t event; 
+  accel.getEvent(&event);
+  float x = event.acceleration.x;
+  float y = event.acceleration.y;
+  float z = event.acceleration.z;
+  
+  pinMode(vib_sens, INPUT);
+  pinMode(lampu, OUTPUT);
+  pinMode(buz_pin, OUTPUT); 
+  
+  lcd.init();
+  lcd.backlight();
+  
+  lcd.setCursor(0, 1);
+  lcd.print("SEISMOMETER---------");
+  lcd.setCursor(0, 2);
+  lcd.print("-----------SEDERHANA");
+  delay(3500);
+
+  for(int i=0; i<samples; i++){
+    x_sample += x;
+    y_sample += y;
+    z_sample += z;
+  }
+  x_sample /= samples;
+  y_sample /= samples;
+  z_sample /= samples;
+  
+  lcd.clear();
+  lcd.setCursor(3, 1);
+  lcd.print("Calibrating...");
+  delay(3000);
+  lcd.clear();
+  lcd.setCursor(3, 1);
+  lcd.print("Please wait...");
+  delay(3000);
+  lcd.clear();
+  lcd.setCursor(5, 1);
+  lcd.print("Calibrated!");
+  delay(2000);
+  lcd.clear();
+  lcd.setCursor(4, 1);
+  lcd.print("Device Ready");
+  delay(3000);
+}
+
+
+void loop()
+{
+  sensors_event_t event; 
+  accel.getEvent(&event);
+  float x = event.acceleration.x;
+  float y = event.acceleration.y;
+  float z = event.acceleration.z;
+  vib_sens_status = digitalRead(vib_sens);
+
+  int x_value = x_sample - x;
+  int y_value = y_sample - y;
+  int z_value = z_sample - z;
+
+  if(x_value < min_val || x_value > max_val || y_value < min_val || y_value > max_val || z_value < min_val || z_value > max_val){
+    digitalWrite(buz_pin, HIGH);
+    digitalWrite(lampu, HIGH);
+    delay(500);
+    
+    lcd.clear();
+    lcd.setCursor(4, 1);
+    lcd.print("ADA GETARAN");
+    delay(300);
+
+    lcd.clear();
+    lcd.setCursor(4, 1);
+    lcd.print("ADA GETARAN");
+    lcd.setCursor(1, 2);
+    lcd.print("GEMPA TERDETEKSI!!");
+    delay(300);
+    
+  }else{
+    digitalWrite(lampu, LOW);
+    digitalWrite(buz_pin, LOW);
+    lcd.clear();
+    lcd.setCursor(1,0);
+    lcd.print("Tidak Ada Getaran");
+
+  lcd.setCursor(0,1);
+  lcd.print("====================");
+  lcd.setCursor(1,2);
+  lcd.print("X        Y       Z");
+  lcd.setCursor(0,3);
+  lcd.print(x_value);
+  lcd.setCursor(8,3);
+  lcd.print(y_value);
+  lcd.setCursor(15,3);
+  lcd.print(z_value);
+ 
+  }
+
+   Serial.print(", ");
+   Serial.print(x_value);
+   Serial.print(", ");
+   Serial.print(y_value);
+   Serial.print(", ");
+   Serial.println(z_value);
+   delay(200);
+}
